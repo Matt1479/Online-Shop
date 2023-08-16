@@ -1,5 +1,5 @@
 from cs50 import SQL
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
@@ -60,11 +60,46 @@ def cart():
 def register():
     """ Register a user"""
 
-    # TODO: User reached route via POST (submitted a form)
+    # User reached route via POST (submitted a form)
     if request.method == "POST":
-        ...
+        username = request.form.get("username")
+        password = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+
+        # Ensure user provided username, password, confirmation
+        if not username:
+            flash("Username is required.", "info")
+            return render_template("register.html")
+
+        elif not password:
+            flash("Password is required.", "info")
+            return render_template("register.html")
+
+        elif not confirmation or password != confirmation:
+            flash("Passwords do not match.", "info")
+            return render_template("register.html")
+        
+        elif len(password) < 8:
+            flash("Password needs to be at least 8 characters.", "info")
+            return render_template("register.html")
+
+
+        # Query database for username
+        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+
+        # Ensure the username is not taken
+        if len(rows) == 1:
+            flash("Username is taken", "info")
+            return render_template("register.html")
+
+        # INSERT the new user into users table, storing a hash of user's password
+        db.execute("INSERT INTO users (username, hash) VALUES (?, ?)",
+        username, generate_password_hash(password))
+
+        # Redirect the user to login page
+        return redirect("/login")
     
-    # TODO: User reached route via GET (clicked on a link, redirected or typed this route)
+    # User reached route via GET (clicked on a link, redirected or typed this route)
     else:
         return render_template("register.html")
 
@@ -73,13 +108,40 @@ def register():
 def login():
     """ Log user in"""
 
-    # TODO: Forget any user_id
+    # Forget any user_id
+    session.clear()
 
-    # TODO: User reached route via POST (as by submitting a form via POST)
+    #  User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        ...
+        
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        # Ensure user provided username and password
+        if not username:
+            flash("Username is required.", "info")
+            return render_template("login.html")
+
+        elif not password:
+            flash("Password is required.", "info")
+            return render_template("login.html")
+        
+        # Query database for username
+        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
+            flash("Invalid username and/or password.", "info")
+            return render_template("login.html")
+        
+        # Remember which user has logged in
+        session["user_id"] = rows[0]["id"]
+
+        # Redirect user to index
+        return redirect("/")
+
     
-    # TODO: User reached route via GET (as by clicking a link or via a redirect)
+    # User reached route via GET (as by clicking a link or via a redirect)
     else:
         return render_template("login.html")
 
@@ -88,8 +150,11 @@ def login():
 def logout():
     "Log user out"
 
-    # TODO
-    ...
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/")
 
 
 @app.route("/account")

@@ -21,3 +21,10 @@ nav .navbar-brand .green
 {
     color: #2e944b;
 }
+
+/* Big search input for bigger devices */
+@media only screen and (min-width: 767px) {
+    input[type="search"] {
+        width: 70vw;
+    }
+}
