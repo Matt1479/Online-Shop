@@ -1,3 +1,4 @@
+import ast
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -31,8 +32,6 @@ def after_request(response):
 @login_required
 def index():
     """Show all items"""
-    
-    # Pass items to index
 
     # Query database for items
     rows = db.execute("SELECT * FROM items")
@@ -50,14 +49,97 @@ def item(id):
     return render_template("item.html", item=rows[0])
 
 
-@app.route("/cart")
+@app.route("/cart", methods=["GET", "POST"])
 @login_required
 def cart():
     """Show items in cart"""
 
-    # TODO
+    # User reached route via POST (submitted a form)
+    if request.method == "POST":
+    
+        # Add this item to user's cart IF it exists
+        item_id = request.form.get("id")
+        try:
+            quantity = int(request.form.get("qty"))
+        except ValueError:
+            flash("An error occurred.")
+            return redirect("/")
 
-    return render_template("cart.html")
+        if item_id and request.form.get("qty"):
+
+            rows = db.execute("SELECT * FROM cart WHERE item_id = ? AND user_id = ?",
+            item_id, session["user_id"])
+            if len(rows) > 0:
+                try:
+                    current_quantity = int(rows[0]["quantity"])
+                except ValueError:
+                    flash("An error occurred.")
+                    return redirect("/")
+                
+                db.execute("UPDATE cart SET quantity = ? WHERE item_id = ? AND user_id = ?",
+                current_quantity + quantity, item_id, session["user_id"])
+            else:
+                db.execute("INSERT INTO cart (user_id, item_id, quantity) VALUES (?, ?, ?)",
+                session["user_id"], item_id, quantity)
+
+    # Select items from user's cart
+    cart = db.execute("SELECT * FROM cart JOIN items ON items.id = cart.item_id WHERE cart.user_id = ?", session["user_id"])
+
+    total = 0.00
+    for item in cart:
+        total += item["price"] * item["quantity"]
+
+    # Pass user's cart items to cart route
+    return render_template("cart.html", cart=cart, total=total)
+
+
+@app.route("/update", methods=["POST"])
+def update():
+    """Update an item's quantity"""
+    
+    item_id = request.form.get("id")
+    try:
+        quantity = int(request.form.get("qty"))
+    except ValueError:
+        flash("An error occurred.")
+        return redirect("/")
+
+    if item_id and quantity:
+        db.execute("UPDATE cart SET quantity = ? WHERE item_id = ? AND user_id = ?",
+        quantity, item_id, session["user_id"])
+        print(item_id, quantity)
+    return redirect("/cart")
+
+
+@app.route("/delete", methods=["POST"])
+def delete():
+    """Delete an item from cart"""
+
+    try:
+        item_id = int(request.form.get("id"))
+    except ValueError:
+        flash("An error occurred.")
+        return redirect("/")
+    
+    if item_id:
+        db.execute("DELETE FROM cart WHERE item_id = ? AND user_id = ?",
+        item_id, session["user_id"])
+    return redirect("/cart")
+
+
+@app.route("/checkout", methods=["POST"])
+def checkout():
+    """Check user out"""
+    
+    items = request.form.get("checkout")
+    if items:
+        flash("Thank you! Please await the delivery.", "info")
+        items = ast.literal_eval(items)
+        for item in items:
+            db.execute("INSERT INTO orders (user_id, item_id, quantity, date) VALUES(?, ?, ?, ?)",
+                session["user_id"], item["item_id"], item["quantity"], datetime.now())
+        db.execute("DELETE FROM cart WHERE user_id = ?", session["user_id"])
+    return redirect("/")
 
 
 @app.route("/register", methods=["GET", "POST"])
