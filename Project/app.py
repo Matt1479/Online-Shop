@@ -243,14 +243,15 @@ def logout():
     return redirect("/")
 
 
-@app.route("/account")
+@app.route("/orders")
 @login_required
-def account():
-    """Show user his account"""
+def orders():
+    """Show user his orders"""
     
-    # TODO
+    rows = db.execute("SELECT * FROM orders JOIN items ON items.id = orders.item_id WHERE orders.user_id = ?",
+    session["user_id"])
 
-    return render_template("account.html")
+    return render_template("orders.html", orders=rows)
 
 
 @app.route("/sulogin", methods=["GET", "POST"])
