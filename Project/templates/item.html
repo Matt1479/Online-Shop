@@ -1,11 +1,41 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Item
+    {{ item.title }}
 {% endblock %}
 
 {% block main %}
 
-    <p>TODO</p>
+    <div class="row text-start m-3 text-wrap">
+        <div class="col-12 mb-3">
+            <h1>{{ item.title }}</h1>
+        </div>
+        <div class="col-sm-12 col-md-8">
+            <img src="/{{ item.image_path }}" alt="{{ item.title }}" class="img-fluid">
+        </div>
+        <div class="col-sm-12 col-md-4">
+            <p class="lead text-secondary fw-bold">{{ item.description }}</p>
+            <p class="text-end m-3">Price: $<span class="fw-bold">{{ item.price }}</span></p>
+            <form action="/cart" method="POST">
+                <input type="hidden" name="id" value="{{ item.id }}">
+                <input type="hidden" name="qty" value="1">
+                <div class="btn-group mb-2">
+                    <button type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                    Qty: 1
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-item">1</li>
+                        {% for i in range(8) %}
+                        <li class="dropdown-item">{{ i + 2 }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-warning mb-2" type="submit">Add to Cart</button>
+                    <button class="btn btn-warning" style="background-color: orange;" type="submit">Buy Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
 {% endblock %}

@@ -32,18 +32,22 @@ def after_request(response):
 def index():
     """Show all items"""
     
-    # TODO: pass items to render_template
-    return render_template("index.html")
+    # Pass items to index
+
+    # Query database for items
+    rows = db.execute("SELECT * FROM items")
+
+    return render_template("index.html", items=rows)
 
 
-@app.route("/item", methods=["GET"])
+@app.route("/item/<id>", methods=["GET"])
 @login_required
-def item():
+def item(id):
     """Show individual item"""
 
-    # TODO
+    rows = db.execute("SELECT * FROM items WHERE id = ?", id)
 
-    return render_template("item.html")
+    return render_template("item.html", item=rows[0])
 
 
 @app.route("/cart")
