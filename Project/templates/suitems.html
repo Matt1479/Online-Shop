@@ -6,6 +6,33 @@
 
 {% block main %}
 
-    <p>TODO</p>
+    <div class="row ml-3 mr-3 mb-3">
+        <div class="col">
+            <a class="btn btn-outline-success" type="button" style="width: 50vw;" href="/sunewitem">Add new item</a>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-4">
+
+        {% for item in items %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="/{{ item.image_path }}" class="card-img-top" alt="{{ item.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.title }}</h5>
+                    <p class="card-text">{{ item.description }}</p>
+                    <p class="card-text">Price: {{ item.price }}$</p>
+                    <div class="btn-group" role="group">
+                        <a type="submit" class="btn btn-warning btn-sm m-2" href="/suedititem/{{ item.id }}">Edit</a>
+                        <form action="/sudeleteitem" method="POST">
+                            <input type="hidden" name="id" value="{{ item.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm m-2">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 
 {% endblock %}

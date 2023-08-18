@@ -1,10 +1,14 @@
+import os
 import ast
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from datetime import datetime
-from helpers import login_required, sulogin_required
+from helpers import login_required, sulogin_required, allowed_file
+
+UPLOAD_FOLDER = 'static/images'
 
 # Configure application
 app = Flask(__name__)
@@ -13,6 +17,7 @@ app = Flask(__name__)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
 
 # Open the database
@@ -321,6 +326,7 @@ def sulogout():
     # Redirect su to login form
     return redirect("/sulogin")
 
+
 @app.route("/suaccount")
 @sulogin_required
 def suaccount():
@@ -329,6 +335,7 @@ def suaccount():
     # TODO: Only allow to change passwords
 
     return render_template("account.html")
+
 
 @app.route("/su")
 @sulogin_required
@@ -351,6 +358,7 @@ def su():
 
 
 @app.route("/updatestatus", methods=["GET", "POST"])
+@sulogin_required
 def updatestatus():
     """Update status of an item"""
 
@@ -367,11 +375,94 @@ def updatestatus():
     else:
         return redirect("/su")
 
+
 @app.route("/suitems")
 @sulogin_required
 def su_items():
-    """Show list of buyable items to admin"""
+    """Show list of items that users can buy"""
 
-    # TODO
+    rows = db.execute("SELECT * FROM items")
 
-    return render_template("suitems.html")
+    return render_template("suitems.html", items=rows)
+
+
+@app.route("/suedititem/<int:id>", methods=["GET", "POST"])
+@sulogin_required
+def suedititem(id):
+    """Edit an item"""
+
+    if request.method == "POST":
+
+        title = request.form.get("title")
+        price = request.form.get("price")
+        description = request.form.get("description")
+
+        if title and price and description:
+            db.execute("UPDATE items SET title = ?, price = ?, description = ? WHERE id = ?",
+            title, price, description, id)
+
+        return redirect("/suitems")
+
+    else:
+
+        rows = db.execute("SELECT * FROM items WHERE id = ?", id)
+
+        return render_template("edit.html", item=rows[0])
+
+
+@app.route("/sudeleteitem", methods=["POST"])
+@sulogin_required
+def sudeleteitem():
+    """Delete a buyable item from the database"""
+
+    item_id = request.form.get("id")
+
+    if item_id:
+        rows = db.execute("SELECT image_path as path FROM items WHERE id = ?", item_id)
+        db.execute("DELETE FROM items WHERE id = ?", item_id)
+        os.remove(os.path.join(rows[0]["path"]))
+
+
+    return redirect("/suitems")
+
+@app.route("/sunewitem", methods=["GET", "POST"])
+@sulogin_required
+def sunewitem():
+    """Add a new item to the shop"""
+
+    if request.method == "POST":
+        title = request.form.get("title")
+        price = request.form.get("price")
+        description = request.form.get("description")
+
+        if title and price and description:
+            # check if the post request has the file part
+            if 'file' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+            file = request.files['file']
+            # if user does not select file, browser also
+            # submit a empty part without filename
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename, extension = secure_filename(file.filename), os.path.splitext(file.filename)
+
+                cur_id = db.execute("SELECT MAX(id) as cur_id FROM items")
+                new_id = int(cur_id[0]["cur_id"] + 1)
+                new_name = str(new_id) + extension[1]
+
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_name))
+            
+            db.execute("INSERT INTO items (title, image_path, price, description) VALUES (?, ?, ?, ?)",
+            title, (UPLOAD_FOLDER + '/' + new_name), price, description)
+
+        else:
+            flash("Missing title, price, or description.")
+            return redirect("/sunewitem")
+        
+        return redirect("/suitems")
+    
+    else:
+        return render_template("new.html")

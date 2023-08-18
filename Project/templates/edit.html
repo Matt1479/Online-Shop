@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit an Item
+{% endblock %}
+
+{% block main %}
+    <form action="/suedititem/{{ item.id }}" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <textarea name="title" type="text" class="form-control" id="title" rows="3">{{ item.title }}</textarea>
+        </div>
+        <!-- <div class="mb-3">
+            <label for="image" class="form-label">image</label>
+            <input name="file" type="file" class="form-control" id="image" accept="image/*">
+        </div> -->
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input name="price" type="number" step="0.01" class="form-control" id="price" value="{{ item.price }}">
+        </div>
+        <div class="mb-3">
+            <label for="Description" class="form-label">Description</label>
+            <textarea name="description" type="text" class="form-control" id="Description" rows="4">{{ item.description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-success btn-lg">Confirm</button>
+        <a type="submit" class="btn btn-warning btn-lg" href="/suitems">Cancel</a>
+    </form>
+{% endblock %}
