@@ -1,6 +1,6 @@
 import ast
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
@@ -140,6 +140,21 @@ def checkout():
                 session["user_id"], item["item_id"], item["quantity"], datetime.now())
         db.execute("DELETE FROM cart WHERE user_id = ?", session["user_id"])
     return redirect("/")
+
+
+@app.route("/search")
+def search():
+    """Search for an item by title"""
+
+    query = request.args.get("q")
+
+    if query:
+        items = db.execute("SELECT * FROM items WHERE title LIKE ? LIMIT 15", "%" + query + "%")
+    else:
+        items = []
+    
+    # Return list of items in JSON format
+    return jsonify(items)
 
 
 @app.route("/register", methods=["GET", "POST"])
