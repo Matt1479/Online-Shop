@@ -273,13 +273,40 @@ def orders():
 def sulogin():
     """ Log superuser in"""
 
-    # TODO: Forget any su_id
+    # Forget any su_id
+    session.clear()
 
-    # TODO: User reached route via POST (as by submitting a form via POST)
+    #  User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        ...
+        
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        # Ensure user provided username and password
+        if not username:
+            flash("Username is required.", "info")
+            return render_template("sulogin.html")
+
+        elif not password:
+            flash("Password is required.", "info")
+            return render_template("sulogin.html")
+        
+        # Query database for username
+        rows = db.execute("SELECT * FROM su WHERE username = ?", username)
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
+            flash("Invalid username and/or password.", "info")
+            return render_template("sulogin.html")
+        
+        # Remember which user has logged in
+        session["su_id"] = rows[0]["id"]
+
+        # Redirect user to index
+        return redirect("/su")
+
     
-    # TODO: User reached route via GET (as by clicking a link or via a redirect)
+    # User reached route via GET (as by clicking a link or via a redirect)
     else:
         return render_template("sulogin.html")
 
@@ -288,9 +315,11 @@ def sulogin():
 def sulogout():
     "Log superuser out"
 
-    # TODO
-    ...
+    # Forget any su_id
+    session.clear()
 
+    # Redirect su to login form
+    return redirect("/sulogin")
 
 @app.route("/suaccount")
 @sulogin_required
@@ -306,10 +335,37 @@ def suaccount():
 def su():
     """Show admin panel"""
 
-    # TODO
+    pending = db.execute("SELECT *, orders.id as order_id FROM orders JOIN items ON items.id = orders.item_id WHERE orders.status = 'pending'")
+    sent = db.execute("SELECT *, orders.id as order_id FROM orders JOIN items ON items.id = orders.item_id WHERE orders.status = 'sent'")
+    delivered = db.execute("SELECT *, orders.id as order_id FROM orders JOIN items ON items.id = orders.item_id WHERE orders.status = 'delivered'")
+    cancelled = db.execute("SELECT *, orders.id as order_id FROM orders JOIN items ON items.id = orders.item_id WHERE orders.status = 'cancelled'")
 
-    return render_template("su.html")
+    statuses = ['pending', 'sent', 'delivered', 'cancelled']
 
+    return render_template("su.html",
+        pending=pending,
+        sent=sent,
+        delivered=delivered,
+        cancelled=cancelled, 
+        statuses=statuses)
+
+
+@app.route("/updatestatus", methods=["GET", "POST"])
+def updatestatus():
+    """Update status of an item"""
+
+    if request.method == "POST":
+        order_id = request.form.get("order_id")
+        status = request.form.get("status")
+
+        if status and order_id:
+            db.execute("UPDATE orders SET status = ? WHERE id = ?",
+            status, order_id)
+        
+        return redirect("/su")
+
+    else:
+        return redirect("/su")
 
 @app.route("/suitems")
 @sulogin_required

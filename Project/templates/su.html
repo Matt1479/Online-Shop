@@ -6,6 +6,200 @@
 
 {% block main %}
 
-    <p>TODO</p>
+    <div class="row text-start m-3 justify-content-center text-center">
+        <div class="col-12">
+            <h1 class="mb-5">Pending</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pending_order in pending %}
+                    <tr>
+                        <th scope="row">{{ pending_order.title }}</th>
+                        <td>${{ pending_order.price }}</td>
+                        <td>{{ pending_order.quantity }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ pending_order.status }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for status in statuses %}
+                                    <li>
+                                        <form action="/updatestatus" method="post">
+                                            <input name="order_id" type="hidden" value="{{ pending_order.order_id }}">
+                                            <input name="status" type="hidden" value="{{ status }}">
+                                            {% if pending_order.status == status %}
+                                                <button class="dropdown-item active" type="submit">{{ status }}</button>
+                                            {% else %}
+                                                <button class="dropdown-item" type="submit">{{ status }}</button>
+                                            {% endif %}
+                                        </form>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                        <td>{{ pending_order.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row text-start m-3 justify-content-center text-center">
+        <div class="col-12">
+            <h1 class="mb-5">Sent</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sent_order in sent %}
+                    <tr>
+                        <th scope="row">{{ sent_order.title }}</th>
+                        <td>${{ sent_order.price }}</td>
+                        <td>{{ sent_order.quantity }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ sent_order.status }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for status in statuses %}
+                                    <li>
+                                        <form action="/updatestatus" method="post">
+                                            <input name="order_id" type="hidden" value="{{ sent_order.order_id }}">
+                                            <input name="status" type="hidden" value="{{ status }}">
+                                            {% if sent_order.status == status %}
+                                                <button class="dropdown-item active" type="submit">{{ status }}</button>
+                                            {% else %}
+                                                <button class="dropdown-item" type="submit">{{ status }}</button>
+                                            {% endif %}
+                                        </form>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                        <td>{{ sent_order.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row text-start m-3 justify-content-center text-center">
+        <div class="col-12">
+            <h1 class="mb-5">Delivered</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for delivered_order in delivered %}
+                    <tr>
+                        <th scope="row">{{ delivered_order.title }}</th>
+                        <td>${{ delivered_order.price }}</td>
+                        <td>{{ delivered_order.quantity }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ delivered_order.status }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for status in statuses %}
+                                    <li>
+                                        <form action="/updatestatus" method="post">
+                                            <input name="order_id" type="hidden" value="{{ delivered_order.order_id }}">
+                                            <input name="status" type="hidden" value="{{ status }}">
+                                            {% if delivered_order.status == status %}
+                                                <button class="dropdown-item active" type="submit">{{ status }}</button>
+                                            {% else %}
+                                                <button class="dropdown-item" type="submit">{{ status }}</button>
+                                            {% endif %}
+                                        </form>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                        <td>{{ delivered_order.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row text-start m-3 justify-content-center text-center">
+        <div class="col-12">
+            <h1 class="mb-5">Cancelled</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cancelled_order in cancelled %}
+                    <tr>
+                        <th scope="row">{{ cancelled_order.title }}</th>
+                        <td>${{ cancelled_order.price }}</td>
+                        <td>{{ cancelled_order.quantity }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ cancelled_order.status }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for status in statuses %}
+                                    <li>
+                                        <form action="/updatestatus" method="post">
+                                            <input name="order_id" type="hidden" value="{{ cancelled_order.order_id }}">
+                                            <input name="status" type="hidden" value="{{ status }}">
+                                            {% if cancelled_order.status == status %}
+                                                <button class="dropdown-item active" type="submit">{{ status }}</button>
+                                            {% else %}
+                                                <button class="dropdown-item" type="submit">{{ status }}</button>
+                                            {% endif %}
+                                        </form>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                        <td>{{ cancelled_order.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 {% endblock %}
