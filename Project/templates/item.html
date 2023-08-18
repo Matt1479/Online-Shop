@@ -24,13 +24,12 @@
                 <input type="hidden" name="id" value="{{ item.id }}">
                 <input type="hidden" name="qty" value="1">
                 <div class="btn-group mb-2">
-                    <button type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown" aria-expanded="false" id="qtyBtn">
                     Qty: 1
                     </button>
-                    <ul class="dropdown-menu">
-                        <li class="dropdown-item">1</li>
-                        {% for i in range(8) %}
-                        <li class="dropdown-item">{{ i + 2 }}</li>
+                    <ul class="dropdown-menu" id="qtyDropdown">
+                        {% for i in range(9) %}
+                        <li class="dropdown-item" type="button">{{ i + 1 }}</li>
                         {% endfor %}
                     </ul>
                 </div>
