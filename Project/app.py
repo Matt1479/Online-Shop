@@ -6,7 +6,7 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from helpers import login_required, sulogin_required, allowed_file, usd
+from helpers import login_required, su_login_required, allowed_file, usd
 
 UPLOAD_FOLDER = 'static/images'
 
@@ -65,24 +65,22 @@ def cart():
     # User reached route via POST (submitted a form)
     if request.method == "POST":
     
-        # Add this item to user's cart IF it exists
-        item_id = request.form.get("id")
+        # Add this item to user's cart If it exists
+
+       # Validate item_id and quantity
         try:
+            item_id = int(request.form.get("id"))
             quantity = int(request.form.get("qty"))
         except ValueError:
             flash("An error occurred.")
             return redirect("/")
 
-        if item_id and request.form.get("qty"):
-
+        if item_id and quantity:
             rows = db.execute("SELECT * FROM cart WHERE item_id = ? AND user_id = ?",
             item_id, session["user_id"])
+
             if len(rows) > 0:
-                try:
-                    current_quantity = int(rows[0]["quantity"])
-                except ValueError:
-                    flash("An error occurred.")
-                    return redirect("/")
+                current_quantity = int(rows[0]["quantity"])
                 
                 db.execute("UPDATE cart SET quantity = ? WHERE item_id = ? AND user_id = ?",
                 current_quantity + quantity, item_id, session["user_id"])
@@ -102,11 +100,13 @@ def cart():
 
 
 @app.route("/update", methods=["POST"])
+@login_required
 def update():
     """Update an item's quantity"""
     
-    item_id = request.form.get("id")
+    # Validate item_id and quantity
     try:
+        item_id = int(request.form.get("id"))
         quantity = int(request.form.get("qty"))
     except ValueError:
         flash("An error occurred.")
@@ -115,11 +115,11 @@ def update():
     if item_id and quantity:
         db.execute("UPDATE cart SET quantity = ? WHERE item_id = ? AND user_id = ?",
         quantity, item_id, session["user_id"])
-        print(item_id, quantity)
     return redirect("/cart")
 
 
 @app.route("/delete", methods=["POST"])
+@login_required
 def delete():
     """Delete an item from cart"""
 
@@ -136,10 +136,12 @@ def delete():
 
 
 @app.route("/checkout", methods=["POST"])
+@login_required
 def checkout():
     """Check user out"""
     
     items = request.form.get("checkout")
+
     if items:
         flash("Thank you! Please await the delivery.", "info")
         items = ast.literal_eval(items)
@@ -151,6 +153,7 @@ def checkout():
 
 
 @app.route("/search")
+@login_required
 def search():
     """Search for an item by title"""
 
@@ -220,7 +223,7 @@ def login():
     # Forget any user_id
     session.clear()
 
-    #  User reached route via POST (as by submitting a form via POST)
+    # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         
         username = request.form.get("username")
@@ -277,7 +280,7 @@ def orders():
     return render_template("orders.html", orders=rows)
 
 
-@app.route("/sulogin", methods=["GET", "POST"])
+@app.route("/su/login", methods=["GET", "POST"])
 def sulogin():
     """ Log superuser in"""
 
@@ -319,7 +322,7 @@ def sulogin():
         return render_template("sulogin.html")
 
 
-@app.route("/sulogout")
+@app.route("/su/logout")
 def sulogout():
     "Log superuser out"
 
@@ -327,11 +330,11 @@ def sulogout():
     session.clear()
 
     # Redirect su to login form
-    return redirect("/sulogin")
+    return redirect("/su/login")
 
 
-@app.route("/suaccount")
-@sulogin_required
+@app.route("/su/account")
+@su_login_required
 def suaccount():
     """Show superuser his account"""
     
@@ -341,7 +344,7 @@ def suaccount():
 
 
 @app.route("/su")
-@sulogin_required
+@su_login_required
 def su():
     """Show admin panel"""
 
@@ -361,7 +364,7 @@ def su():
 
 
 @app.route("/updatestatus", methods=["GET", "POST"])
-@sulogin_required
+@su_login_required
 def updatestatus():
     """Update status of an item"""
 
@@ -373,14 +376,11 @@ def updatestatus():
             db.execute("UPDATE orders SET status = ? WHERE id = ?",
             status, order_id)
         
-        return redirect("/su")
-
-    else:
-        return redirect("/su")
+    return redirect("/su")
 
 
-@app.route("/suitems")
-@sulogin_required
+@app.route("/su/items")
+@su_login_required
 def su_items():
     """Show list of items that users can buy"""
 
@@ -389,9 +389,9 @@ def su_items():
     return render_template("suitems.html", items=rows)
 
 
-@app.route("/suedititem/<int:id>", methods=["GET", "POST"])
-@sulogin_required
-def suedititem(id):
+@app.route("/su/edititem/<int:id>", methods=["GET", "POST"])
+@su_login_required
+def su_edititem(id):
     """Edit an item"""
 
     if request.method == "POST":
@@ -404,7 +404,7 @@ def suedititem(id):
             db.execute("UPDATE items SET title = ?, price = ?, description = ? WHERE id = ?",
             title, price, description, id)
 
-        return redirect("/suitems")
+        return redirect("/su/items")
 
     else:
 
@@ -413,9 +413,9 @@ def suedititem(id):
         return render_template("edit.html", item=rows[0])
 
 
-@app.route("/sudeleteitem", methods=["POST"])
-@sulogin_required
-def sudeleteitem():
+@app.route("/su/deleteitem", methods=["POST"])
+@su_login_required
+def su_deleteitem():
     """Delete a buyable item from the database"""
 
     item_id = request.form.get("id")
@@ -426,31 +426,36 @@ def sudeleteitem():
         os.remove(os.path.join(rows[0]["path"]))
 
 
-    return redirect("/suitems")
+    return redirect("/su/items")
 
 
-@app.route("/sunewitem", methods=["GET", "POST"])
-@sulogin_required
-def sunewitem():
+@app.route("/su/newitem", methods=["GET", "POST"])
+@su_login_required
+def su_newitem():
     """Add a new item to the shop"""
 
     if request.method == "POST":
+
         title = request.form.get("title")
         price = request.form.get("price")
         description = request.form.get("description")
 
         if title and price and description:
-            # check if the post request has the file part
+
+            # Check if the POST request has the file part
             if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
+
             file = request.files['file']
-            # if user does not select file, browser also
-            # submit a empty part without filename
+
+            # Make sure user selects a file
             if file.filename == '':
                 flash('No selected file')
                 return redirect(request.url)
+
             if file and allowed_file(file.filename):
+
                 filename, extension = secure_filename(file.filename), os.path.splitext(file.filename)
 
                 cur_id = db.execute("SELECT MAX(id) as cur_id FROM items")
@@ -463,10 +468,11 @@ def sunewitem():
             title, (UPLOAD_FOLDER + '/' + new_name), price, description)
 
         else:
+
             flash("Missing title, price, or description.")
-            return redirect("/sunewitem")
+            return redirect("/su/newitem")
         
-        return redirect("/suitems")
+        return redirect("/su/items")
     
     else:
         return render_template("new.html")

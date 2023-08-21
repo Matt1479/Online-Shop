@@ -16,13 +16,13 @@ def login_required(f):
     return decorated_function
 
 
-def sulogin_required(f):
+def su_login_required(f):
     """Decorate superuser routes to require login"""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("su_id") is None:
-            return redirect("/sulogin")
+            return redirect("/su/login")
         return f(*args, **kwargs)
     
     return decorated_function

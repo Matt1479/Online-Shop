@@ -23,7 +23,7 @@
                     {% for order in orders %}
                     <tr>
                         <th scope="row">{{ order.title }}</th>
-                        <td>${{ order.price }}</td>
+                        <td>{{ order.price | usd }}</td>
                         <td>{{ order.quantity }}</td>
                         <td>{{ order.status }}</td>
                         <td>{{ order.date }}</td>

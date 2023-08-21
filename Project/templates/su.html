@@ -23,7 +23,7 @@
                     {% for pending_order in pending %}
                     <tr>
                         <th scope="row">{{ pending_order.title }}</th>
-                        <td>${{ pending_order.price }}</td>
+                        <td>{{ pending_order.price | usd }}</td>
                         <td>{{ pending_order.quantity }}</td>
                         <td>
                             <div class="dropdown">
@@ -72,7 +72,7 @@
                     {% for sent_order in sent %}
                     <tr>
                         <th scope="row">{{ sent_order.title }}</th>
-                        <td>${{ sent_order.price }}</td>
+                        <td>{{ sent_order.price | usd }}</td>
                         <td>{{ sent_order.quantity }}</td>
                         <td>
                             <div class="dropdown">
@@ -121,7 +121,7 @@
                     {% for delivered_order in delivered %}
                     <tr>
                         <th scope="row">{{ delivered_order.title }}</th>
-                        <td>${{ delivered_order.price }}</td>
+                        <td>{{ delivered_order.price | usd }}</td>
                         <td>{{ delivered_order.quantity }}</td>
                         <td>
                             <div class="dropdown">
@@ -170,7 +170,7 @@
                     {% for cancelled_order in cancelled %}
                     <tr>
                         <th scope="row">{{ cancelled_order.title }}</th>
-                        <td>${{ cancelled_order.price }}</td>
+                        <td>{{ cancelled_order.price | usd }}</td>
                         <td>{{ cancelled_order.quantity }}</td>
                         <td>
                             <div class="dropdown">

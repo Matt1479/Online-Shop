@@ -19,7 +19,7 @@
         </div>
         <div class="col-sm-12 col-md-4">
             <p class="lead text-secondary fw-bold">{{ item.description }}</p>
-            <p class="text-end m-3">Price: $<span class="fw-bold">{{ item.price }}</span></p>
+            <p class="text-end m-3">Price: <span class="fw-bold">{{ item.price | usd }}</span></p>
             <form action="/cart" method="POST">
                 <input type="hidden" name="id" value="{{ item.id }}">
                 <input type="hidden" name="qty" value="1">

@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/suedititem/{{ item.id }}" method="post" enctype="multipart/form-data">
+    <form action="/su/edititem/{{ item.id }}" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
             <textarea name="title" type="text" class="form-control" id="title" rows="3">{{ item.title }}</textarea>
@@ -23,6 +23,6 @@
             <textarea name="description" type="text" class="form-control" id="Description" rows="4">{{ item.description }}</textarea>
         </div>
         <button type="submit" class="btn btn-success btn-lg">Confirm</button>
-        <a type="submit" class="btn btn-warning btn-lg" href="/suitems">Cancel</a>
+        <a type="submit" class="btn btn-warning btn-lg" href="/su/items">Cancel</a>
     </form>
 {% endblock %}
