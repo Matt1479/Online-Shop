@@ -428,6 +428,7 @@ def sudeleteitem():
 
     return redirect("/suitems")
 
+
 @app.route("/sunewitem", methods=["GET", "POST"])
 @sulogin_required
 def sunewitem():
@@ -469,3 +470,8 @@ def sunewitem():
     
     else:
         return render_template("new.html")
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html")
