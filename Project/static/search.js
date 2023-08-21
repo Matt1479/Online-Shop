@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded',  () => {
         let searchInput = document.querySelector('input[type="search"]');
         let originalContent = document.querySelector('div.row').innerHTML;
 
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+        });
+
         searchInput.addEventListener('input', async () => {
             let response = await fetch("/search?q=" + searchInput.value);
             let items = await response.json();
@@ -15,7 +20,7 @@ document.addEventListener('DOMContentLoaded',  () => {
                         <div class="card-body">
                             <h5 class="card-title">${items[id].title}</h5>
                             <p class="card-text">${items[id].description}</p>
-                            <p class="card-text">Price: ${items[id].price}$</p>
+                            <p class="card-text">Price: ${formatter.format(items[id].price) }</p>
                             <a href="/item/${items[id].id}" class="stretched-link" type="hidden"></a>
                         </div>
                     </div>

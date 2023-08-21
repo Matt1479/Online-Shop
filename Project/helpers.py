@@ -3,6 +3,7 @@ from functools import wraps
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'])
 
+
 def login_required(f):
     """Decorate routes to require login"""
 
@@ -13,6 +14,7 @@ def login_required(f):
         return f(*args, **kwargs)
     
     return decorated_function
+
 
 def sulogin_required(f):
     """Decorate superuser routes to require login"""
@@ -29,3 +31,8 @@ def sulogin_required(f):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def usd(value):
+    """Format value as USD."""
+    return f"${value:,.2f}"
