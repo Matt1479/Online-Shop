@@ -168,9 +168,59 @@ def search():
     return jsonify(items)
 
 
+@app.route("/changepassword", methods=["GET", "POST"])
+@login_required
+def changepassword():
+    """Change user's password"""
+
+    # User reached route via POST (submitted a form)
+    if request.method == "POST":
+        
+        current_password = request.form.get("current")
+        new_password = request.form.get("new")
+        confirm_password = request.form.get("confirm")
+
+        # Ensure all fields have values
+        if not current_password or not new_password or not confirm_password:
+            flash("Field(s) can't be empty", "info")
+            return redirect("/changepassword")
+        
+        # Ensure current password is correct
+        rows = db.execute("SELECT hash FROM users WHERE id = ?", session["user_id"])
+        if not check_password_hash(rows[0]["hash"], current_password):
+            flash("Current password is incorrect.", "info")
+            return redirect("/changepassword")
+        
+        # Ensure new passwords match
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "info")
+            return redirect("/changepassword")
+        
+        # Ensure new password is different than the current one
+        if current_password == new_password:
+            flash("Your new password can't be the same as the current password.", "info")
+            return redirect("/changepassword")
+        
+        # Ensure new password is at least 8 characters long
+        if len(new_password) < 8:
+            flash("Password needs to be at least 8 characters.", "info")
+            return redirect("/changepassword")
+        
+        # Update user's old hashed password with a new generated hashed password
+        db.execute("UPDATE users SET hash = ? WHERE id = ?",
+        generate_password_hash(new_password), session["user_id"])
+
+        flash("Password changed successfully.", "info")
+        return redirect("/changepassword")
+
+    # User reached route via GET (clicked on a link, typed in a URL)
+    else:
+        
+        return render_template("changepassword.html")
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """ Register a user"""
+    """Register a user"""
 
     # User reached route via POST (submitted a form)
     if request.method == "POST":
