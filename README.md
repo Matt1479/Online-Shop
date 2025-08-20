@@ -1,5 +1,7 @@
 # Online Shop
 
+> See a remake of this project that uses SQLite3 instead of CS50.SQL: https://github.com/Matt1479/Online-Shop-Remake
+
 #### Video Demo: https://youtu.be/qeWnnzCsNBA
 
 #### Description
